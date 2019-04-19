@@ -45,5 +45,6 @@ int main(void)
     printf("addr: %p\n", &Base::Fun1);
     printf("addr: %p\n", &Base::Fun3);
 
+
     return 0;
 }
