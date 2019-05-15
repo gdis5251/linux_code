@@ -13,6 +13,7 @@ void ProcessCreate(pid_t* pid, func_ptr func, void* arg)
 
     if (id == 0)//Child
     {
+        std::cout << "I am child, And my id is : " << getpid() << std::endl;
         func(*((int*)arg), *((int*)arg + 1));
         exit(0);
     }
@@ -47,7 +48,6 @@ void ProcessCreate(pid_t* pid, func_ptr func, void* arg)
 
 void Func(int i, int j)
 {
-    std::cout << "I am child, And my id is : " << getpid() << std::endl;
     std::cout << i + j << std::endl;
     sleep(100);
 }
