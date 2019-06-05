@@ -210,7 +210,7 @@ int main(void)
 #endif
 
 // 使用gdb调试多线程程序
-#if 1
+#if 0
 void *ThreadEntry(void *arg)
 {
     (void)arg;
@@ -235,4 +235,52 @@ int main(void)
 
     return 0;
 }
+#endif
+
+// 测试多线程提升效率
+#if 1
+std::vector<int> arr(500000000);
+// 线程数
+const int thread_num = 1;
+
+void *ThreadEntry(void *arg)
+{
+    for (int i = *(int*)arg; i < *((int*)arg + 1); i++)
+    {
+        arr[i] = i;
+    }
+
+    return nullptr;
+}
+int main(void)
+{
+    std::vector<pthread_t> tid(thread_num);
+    int space[2] = {0};
+    int start = 0;
+    int end = 0;
+    int gap = (arr.size() / thread_num);
+
+    int start_time = clock();
+    for (size_t i = 0; i < thread_num; i++)
+    {
+        end = start + gap;
+
+        space[0] = start;
+        space[1] = end;
+        pthread_create(&tid[i], nullptr, ThreadEntry, (void*)space);
+
+        start = end;
+    }
+
+    for (size_t i = 0; i < thread_num; i++)
+    {
+        pthread_join(tid[i], 0);
+    }
+    int end_time = clock();
+
+    std::cout << "Total spend: " << end_time - start_time << std::endl;
+
+    return 0;
+}
+
 #endif
