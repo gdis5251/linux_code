@@ -48,7 +48,7 @@ public:
     }
 
     // 删除是消费者的动作
-    T Pop()
+    void Pop(T* data)
     {
         LockQueue();
 
@@ -63,14 +63,13 @@ public:
             ConsumeWait();
         }
 
-        T ret = _qu.front();
+        *data = _qu.front();
         _qu.pop();
 
         NotifyProducer();
 
         UnlockQueue();
 
-        return ret;
     }
 
 private:
