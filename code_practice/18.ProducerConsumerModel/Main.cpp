@@ -14,7 +14,7 @@ void *Producer(void *arg)
 
         std::cout << "Producer done. The data is --> " << data << std::endl;
 
-        usleep(333333);
+        usleep(789789);
     }
 
     return nullptr;
@@ -26,11 +26,12 @@ void *Consume(void *arg)
 
     while (true)
     {
-        int data = p->Pop();
+        int data;
+        p->Pop(&data);
         
         std::cout << "Consume done. The data is --> " << data << std::endl;
 
-        usleep(777777);
+        usleep(123123);
     }
 
     return nullptr;

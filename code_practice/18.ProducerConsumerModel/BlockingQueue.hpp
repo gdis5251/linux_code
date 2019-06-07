@@ -125,6 +125,11 @@ private:
 
 #if 1
 // 用信号量和环形数组来实现阻塞队列
+// 信号量表示可用资源个数
+// 一个信号量表示当前队列中元素的个数
+// 另一个信号量表示当前队列中空格的个数
+// 插入元素就是在消耗一个空格资源，释放了一个元素资源
+// 删除元素就是在消耗一个元素资源，释放了一个空格资源
 #include <semaphore.h>
 
 template <class T>
@@ -139,59 +144,49 @@ public:
     {
         _qu.resize(capacity);
         sem_init(&_lock, 0, 1);
+        sem_init(&_elem, 0, 0);
+        sem_init(&_blank, 0, _capicity);
     }
 
     virtual ~BlockingQueue()
     {
         sem_destroy(&_lock);
+        sem_destroy(&_elem);
+        sem_destroy(&_blank);
     }
 
     void Push(const T& data)
     {
-        while (IsFull())
-        {
-            std::cout << "BlockingQueue is full. Producer waiting..." << std::endl;
-            usleep(999999);
-        }
+        // 每次插入元素前，申请一个空格资源
+        // 如果没有空格资源，说明队列满了
+        // 满了就不能继续插入，并且在 Push 中阻塞
+        sem_wait(&_blank);
 
         sem_wait(&_lock);
-
         _qu[_tail++] = data;
         _tail %= _capicity;
         _size++;
-
         sem_post(&_lock);
+
+        sem_post(&_elem);
     }
 
-    T Pop()
+    void Pop(T* data)
     {
-        while (IsEmpty())
-        {
-            std::cout << "BlockingQueue is empty. Consume waiting..." << std::endl;
-            usleep(999999);
-        }
+        // 每次出队列前要申请一个元素资源
+        // 如果没有元素资源，队列为空
+        // 不能出队列，要在Pop 中阻塞
+        sem_wait(&_elem);
 
         sem_wait(&_lock);
-
-        T data = _qu[_head++];
+        *data = _qu[_head++];
         _head %= _capicity;
         _size--;
-
         sem_post(&_lock);
 
-        return data;
+        sem_post(&_blank);
     }
 
-private:
-    bool IsFull()
-    {
-        return _size == _capicity ? true : false;
-    }
-
-    bool IsEmpty()
-    {
-        return _size == 0 ? true : false;
-    }
 private:
     sem_t _lock;
     std::vector<T> _qu;
@@ -199,5 +194,7 @@ private:
     int _tail;
     int _size;
     int _capicity;
+    sem_t _elem;
+    sem_t _blank;
 };
 #endif
