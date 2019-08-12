@@ -64,11 +64,11 @@ private:
     Singleton(const Singleton&) = delete;
     Singleton& operator=(const Singleton) = delete;
 
-    static Singleton* m_instance_;
+    static volatile Singleton* m_instance_;
     static std::mutex mutex_;
     static CGorbo c_gorbo_;
 };
 
-Singleton* Singleton::m_instance_ = nullptr;
+volatile Singleton* Singleton::m_instance_ = nullptr;
 std::mutex Singleton::mutex_;
 Singleton::CGorbo cg;
